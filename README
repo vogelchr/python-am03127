@@ -1,0 +1,13 @@
+This is a small python program/module that allows
+you to talk to a AM03127 LED sign.
+
+The one I tested this (not very cleanly) is called:
+
+	Mc Crypt LED Lauflicht
+		LED Light Writing
+		Afficheur de texte defilant
+		LED-lichtkrant
+
+	Item No. 59 09 96 // 59 09 98
+
+See test.sh for sample usage.
