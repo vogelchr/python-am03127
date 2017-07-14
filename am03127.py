@@ -36,14 +36,14 @@ def encode_charset(unicode_str) :
 			s = s + u.encode('cp1252')
 	return s
 
-def send_page_msg(line=1,page='A',lead=None,disp='A',wait=5,lag=None,msg='') :
+def send_page_msg(line=1,page='A',lead=None,disp='A',wait=5,lag=None,col=None,msg='') :
 	default_lead_lag = 'E'
 
 	if not lead :
 		lead = default_lead_lag
 	if not lag  :
 		lag  = default_lead_lag
-			
+
 	if line < 1 or line > 8 :
 		raise RuntimeError('Line not in range 1..8')
 	if not ascii_range(page,'A','Z') :
@@ -56,8 +56,10 @@ def send_page_msg(line=1,page='A',lead=None,disp='A',wait=5,lag=None,msg='') :
 		raise RuntimeError('Waittime not in range 0..25sec (0=0.5 sec)')
 	if not ascii_range(lag,'A','S') :
 		raise RuntimeError('Lag not in range A..S')
-	return '<L%d><P%c><F%c><M%c><W%c><F%c>'%(
-		line,page,lead,disp,chr(wait+65),lag)+msg
+        if not (col in 'ABCDEFGHIJKLMNPQRS') :
+		raise RuntimeError('Colour not one of {ABCDEFGHIJKLMNPQRS}')
+	return '<L%d><P%c><F%c><M%c><W%c><F%c><C%c>'%(
+		line,page,lead,disp,chr(wait+65),lag,col)+msg
 
 def set_clock_msg(unixtime=None) :
 	if not unixtime :
@@ -138,7 +140,9 @@ if __name__ == '__main__' :
 	P.add_option('--line',metavar='LINE',action='store',type='int',default=1,
 		     help='Line (default: 1)')
 	P.add_option('--wait',metavar='S',action='store',type='int',default=1,
-		     help='Wait S seconds (S=0..25, 0=0.5)') 
+		     help='Wait S seconds (S=0..25, 0=0.5)')
+	P.add_option('--col',metavar='COLOUR',action='store',default='A',
+		     help='Colour of text, default: A')
 
 	P.add_option('--schedule',metavar='SCHEDULE',action='store',
 		     default=None,help='Schedule (pages to display).')
@@ -186,7 +190,8 @@ if __name__ == '__main__' :
 	       	data = send_page_msg(msg=msg,
 		     page=opts.page,     line=opts.line,
 		     lead=opts.lead,     lag=opts.lag,
-		     disp=opts.disp,     wait=opts.wait)
+		     disp=opts.disp,     wait=opts.wait,
+                     col=opts.col,)
 
 		packets.append(data)
 
@@ -197,9 +202,5 @@ if __name__ == '__main__' :
 		if ret != 'ACK' :
 			print >>sys.stderr,'Could not send message %s.'%(data)
 			sys.exit(1)
-	
+
 	sys.exit(0)
-
-
-	
-
