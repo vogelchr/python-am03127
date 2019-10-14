@@ -20,6 +20,8 @@ def ascii_range(c,first,last) :
 special_map = {
 	u'\n': ' ',
 	u'\r': '',
+	u'{': '<',
+	u'}': '>',
 	u'<': '<UBC>',
 	u'>': '<UBE>'
 }
@@ -36,7 +38,7 @@ def encode_charset(unicode_str) :
 			s = s + u.encode('cp1252')
 	return s
 
-def send_page_msg(line=1,page='A',lead=None,disp='A',wait=5,lag=None,col=None,msg='') :
+def send_page_msg(line=1,page='A',lead=None,disp='A',wait=5,lag=None,col=None,font=None,msg='') :
 	default_lead_lag = 'E'
 
 	if not lead :
@@ -56,10 +58,12 @@ def send_page_msg(line=1,page='A',lead=None,disp='A',wait=5,lag=None,col=None,ms
 		raise RuntimeError('Waittime not in range 0..25sec (0=0.5 sec)')
 	if not ascii_range(lag,'A','S') :
 		raise RuntimeError('Lag not in range A..S')
-        if not (col in 'ABCDEFGHIJKLMNPQRS') :
+	if not (col in 'ABCDEFGHIJKLMNPQRS') :
 		raise RuntimeError('Colour not one of {ABCDEFGHIJKLMNPQRS}')
-	return '<L%d><P%c><F%c><M%c><W%c><F%c><C%c>'%(
-		line,page,lead,disp,chr(wait+65),lag,col)+msg
+	if not (font in 'ABCDE') :
+		raise RuntimeError('Font not one of {ABCDE}')
+	return '<L%d><P%c><F%c><M%c><W%c><F%c><C%c><A%c>'%(
+		line,page,lead,disp,chr(wait+65),lag,col,font)+msg
 
 def set_clock_msg(unixtime=None) :
 	if not unixtime :
@@ -143,6 +147,8 @@ if __name__ == '__main__' :
 		     help='Wait S seconds (S=0..25, 0=0.5)')
 	P.add_option('--col',metavar='COLOUR',action='store',default='A',
 		     help='Colour of text, default: A')
+	P.add_option('--font',metavar='FONTSTYLE',action='store',default='A',
+		     help='Font of text, default: A')
 
 	P.add_option('--schedule',metavar='SCHEDULE',action='store',
 		     default=None,help='Schedule (pages to display).')
@@ -191,7 +197,7 @@ if __name__ == '__main__' :
 		     page=opts.page,     line=opts.line,
 		     lead=opts.lead,     lag=opts.lag,
 		     disp=opts.disp,     wait=opts.wait,
-                     col=opts.col,)
+             col=opts.col,		 font=opts.font,)
 
 		packets.append(data)
 
